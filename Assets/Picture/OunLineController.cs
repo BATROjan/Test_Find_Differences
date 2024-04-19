@@ -16,5 +16,10 @@ namespace Picture
            var line =  _pool.Spawn(transform);
            return line;
         }
+
+        public void Despawn(OutLineView outLineView)
+        {
+            _pool.Despawn(outLineView);
+        }
     }
 }

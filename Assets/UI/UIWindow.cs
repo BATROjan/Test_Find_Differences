@@ -5,6 +5,8 @@ namespace UI
 {
     public abstract class UIWindow : MonoBehaviour
     {
+        public UIButton UIButton;
+        
         public Action OnShow;
         public Action OnHide;
         public abstract void Show();

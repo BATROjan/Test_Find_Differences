@@ -13,9 +13,14 @@ namespace GameController
         private readonly MainCamera.MainCamera _camera;
         private readonly PictureController _pictureController;
         
+        private UIRoot _uiRoot;
+        
         private const int Distance = 1000;
         private RaycastHit _hit;
-
+        private float _timer = 0;
+        
+        private bool _isLoose;
+        private bool _isInterective;
         public GameController(
             LevelController levelController,
             TickableManager tickableManager,
@@ -32,12 +37,26 @@ namespace GameController
 
         public void Start()
         {
+            _isInterective = true;
             _levelController.UnloadPrefabAsync();
+            CreatTimer(_levelController.GetTimerTime(1));
+            _uiRoot = Object.FindObjectOfType<UIRoot>();
+            
+            _levelController.OnComplite += SuccesEnd;
+            _uiRoot.WinWindow.UIButton.OnClick += Restart;
+            _uiRoot.LooseWindow.UIButton.OnClick += Restart;
         }
 
         public void Restart()
         {
-            throw new System.NotImplementedException();
+             _uiRoot.WinWindow.gameObject.SetActive(false);
+             _uiRoot.LooseWindow.gameObject.SetActive(false);
+             _uiRoot.UIPlayingSceneWindow.gameObject.SetActive(true);
+             
+             _levelController.ClearLevel();
+             _levelController.CreatDifferences();
+             CreatTimer(_levelController.GetTimerTime(1));
+             _isInterective = true;
         }
 
         public void Stop()
@@ -46,16 +65,55 @@ namespace GameController
         }
 
         public void Tick()
-        {
-            if (Input.GetMouseButton(0))
+        { 
+            if (_isInterective)
             {
-                TouchLogic();
+                if (_timer > 0)
+                {
+                    _timer -= Time.deltaTime;
+                    UpdateTimerDisplay();
+                }
+                else
+                {
+                    _uiRoot.UIPlayingSceneWindow.timerText.text = "00:00";
+                    if (!_isLoose)
+                    {
+                        _isInterective = false;
+                        _isLoose = true;
+                        _uiRoot.LooseWindow.gameObject.SetActive(true);
+                        _uiRoot.UIPlayingSceneWindow.gameObject.SetActive(false);
+                    }
+                }
+
+                if (Input.GetMouseButton(0))
+                {
+                    TouchLogic();
+                }
             }
+        }
+
+        public void CreatTimer(int time)
+        {
+            _timer = time;
+            _isLoose = false;
+        }
+        private void UpdateTimerDisplay()
+        {
+            int minutes = Mathf.FloorToInt(_timer / 60);
+            int seconds = Mathf.FloorToInt(_timer % 60);
+            
+            _uiRoot.UIPlayingSceneWindow.timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        }
+
+        private void SuccesEnd()
+        {
+            _isInterective = false;
+            _uiRoot.WinWindow.gameObject.SetActive(true);
+            _uiRoot.UIPlayingSceneWindow.gameObject.SetActive(false);
         }
 
         private void TouchLogic()
         {
-
             Ray ray = _camera.SceneCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             Debug.DrawRay(ray.origin, ray.direction*1000);
