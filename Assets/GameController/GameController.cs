@@ -63,8 +63,11 @@ namespace GameController
             {
                 if (hit.transform)
                 {
-                    Debug.Log("Попал в объект: " + hit.transform.name);
-
+                    var difference = hit.collider.GetComponent<DifferenceView>();
+                    if (difference)
+                    {
+                        _levelController.CheckDifferences(difference);
+                    }
                 }
             }
         }

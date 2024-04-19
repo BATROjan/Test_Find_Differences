@@ -11,9 +11,10 @@ namespace Picture
             _pool = pool;
         }
 
-        public void Spawn(Transform transform)
+        public OutLineView Spawn(Transform transform)
         {
-            _pool.Spawn(transform);
+           var line =  _pool.Spawn(transform);
+           return line;
         }
     }
 }

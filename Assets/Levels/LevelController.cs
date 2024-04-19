@@ -9,7 +9,11 @@ namespace Levels
     public class LevelController
     {
         private readonly OunLineController _outLineController;
+        
         private List<int> _differenceNumder = new List<int>();
+        private Dictionary<int, List<OutLineView>> _dictionary =
+            new Dictionary<int, List<OutLineView>>();
+        
         private int _countOfDifferences = 3;
         public string prefabKey = "Level_1";
         private AsyncOperationHandle<GameObject> loadOperation;
@@ -27,9 +31,27 @@ namespace Levels
             {
                 var picture = Random.Range(0, 2);
                 _levelView.PictureViews[picture].DifferenceViews[_differenceNumder[i]].SpriteRenderer.sprite = null;
+                List<OutLineView> list = new List<OutLineView>();
+                
                 for (int j = 0; j < 2; j++)
                 {
-                    _outLineController.Spawn(_levelView.PictureViews[j].DifferenceViews[_differenceNumder[i]].transform);
+                    var line = _outLineController.Spawn(_levelView.PictureViews[j].DifferenceViews[_differenceNumder[i]].transform);
+                    line.gameObject.SetActive(false);
+                    
+                    list.Add(line);
+                }
+                _dictionary.Add(_levelView.PictureViews[picture].DifferenceViews[_differenceNumder[i]].Number, list);
+            }
+        }
+
+        public void CheckDifferences(DifferenceView differenceView)
+        {
+            if (_dictionary.ContainsKey(differenceView.Number))
+            {
+                var lines = _dictionary[differenceView.Number];
+                foreach (var line in lines)
+                {
+                    line.gameObject.SetActive(true);
                 }
             }
         }
