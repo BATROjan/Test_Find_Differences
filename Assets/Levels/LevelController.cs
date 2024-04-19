@@ -96,10 +96,11 @@ namespace Levels
                 {
                     line.gameObject.SetActive(true);
                     _OuLinedictionary.Remove(differenceView.Number);
-                    if (_OuLinedictionary.Count == 0)
-                    {
-                        OnComplite?.Invoke();
-                    }
+                    
+                }
+                if (_OuLinedictionary.Count == 0)
+                {
+                    OnComplite?.Invoke(); 
                 }
             }
         }

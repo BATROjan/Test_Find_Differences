@@ -1,5 +1,6 @@
 using Levels;
 using Picture;
+using SaveData;
 using UI;
 using UnityEngine;
 using Zenject;
@@ -8,25 +9,27 @@ namespace GameController
 {
     public class GameController : IGameController, ITickable
     {
+        private readonly SaveJSON _saveJson;
         private readonly LevelController _levelController;
         private readonly TickableManager _tickableManager;
         private readonly MainCamera.MainCamera _camera;
         private readonly PictureController _pictureController;
         
         private UIRoot _uiRoot;
-        
-        private const int Distance = 1000;
-        private RaycastHit _hit;
+
+        private int _levelNumber = 1;
         private float _timer = 0;
         
         private bool _isLoose;
         private bool _isInterective;
         public GameController(
+            SaveJSON saveJson,
             LevelController levelController,
             TickableManager tickableManager,
             MainCamera.MainCamera camera,
             PictureController pictureController)
         {
+            _saveJson = saveJson;
             _levelController = levelController;
             _tickableManager = tickableManager;
             _camera = camera;
@@ -37,10 +40,13 @@ namespace GameController
 
         public void Start()
         {
+           _levelNumber = _saveJson.LoadLevel();
             _isInterective = true;
             _levelController.UnloadPrefabAsync();
             CreatTimer(_levelController.GetTimerTime(1));
             _uiRoot = Object.FindObjectOfType<UIRoot>();
+
+            _uiRoot.UIPlayingSceneWindow.LevelNumber.text = "Уровень " + _levelNumber.ToString();
             
             _levelController.OnComplite += SuccesEnd;
             _uiRoot.WinWindow.UIButton.OnClick += Restart;
@@ -49,14 +55,17 @@ namespace GameController
 
         public void Restart()
         {
-             _uiRoot.WinWindow.gameObject.SetActive(false);
-             _uiRoot.LooseWindow.gameObject.SetActive(false);
-             _uiRoot.UIPlayingSceneWindow.gameObject.SetActive(true);
+            _uiRoot.WinWindow.gameObject.SetActive(false);
+            _uiRoot.LooseWindow.gameObject.SetActive(false);
+            _uiRoot.UIPlayingSceneWindow.gameObject.SetActive(true);
              
-             _levelController.ClearLevel();
-             _levelController.CreatDifferences();
-             CreatTimer(_levelController.GetTimerTime(1));
-             _isInterective = true;
+            _uiRoot.UIPlayingSceneWindow.LevelNumber.text = "Уровень " + _levelNumber.ToString();
+            _saveJson.Save(_levelNumber);
+
+            _levelController.ClearLevel();
+            _levelController.CreatDifferences();
+            CreatTimer(_levelController.GetTimerTime(1));
+            _isInterective = true;
         }
 
         public void Stop()
@@ -78,6 +87,7 @@ namespace GameController
                     _uiRoot.UIPlayingSceneWindow.timerText.text = "00:00";
                     if (!_isLoose)
                     {
+                        _levelNumber += 1;
                         _isInterective = false;
                         _isLoose = true;
                         _uiRoot.LooseWindow.gameObject.SetActive(true);
@@ -107,6 +117,7 @@ namespace GameController
 
         private void SuccesEnd()
         {
+            _levelNumber += 1;
             _isInterective = false;
             _uiRoot.WinWindow.gameObject.SetActive(true);
             _uiRoot.UIPlayingSceneWindow.gameObject.SetActive(false);

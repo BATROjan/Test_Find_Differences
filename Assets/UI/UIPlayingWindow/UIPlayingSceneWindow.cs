@@ -8,6 +8,7 @@ namespace UI
     public class UIPlayingSceneWindow : UIWindow
     {
         public Text timerText;
+        public Text LevelNumber;
         
         public Action OnShow;
         public Action OnHide;
